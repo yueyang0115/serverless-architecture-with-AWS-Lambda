@@ -1,4 +1,5 @@
-pylint
+requests
 wikipedia
 python-json-logger
 boto3
+pandas
