@@ -6,6 +6,7 @@ import pandas as pd
 import wikipedia
 import boto3
 from io import StringIO
+from botocore.exceptions import ClientError
 
 
 #S3 BUCKET
@@ -123,14 +124,18 @@ def apply_sentiment(df, column="wikipedia_snippit"):
 
 def write_s3(df, bucket, name):
     """Write S3 Bucket"""
-
-    csv_buffer = StringIO()
-    df.to_csv(csv_buffer)
-    s3_resource = boto3.resource('s3')
-    filename = f"{name}_sentiment.csv"
-    res = s3_resource.Object(bucket, filename).\
-        put(Body=csv_buffer.getvalue())
-    LOG.info(f"result of write to bucket: {bucket} with:\n {res}")
+    
+    LOG.info(f"writing to s3 with name: {name}")
+    try:
+        csv_buffer = StringIO()
+        df.to_csv(csv_buffer)
+        s3_resource = boto3.resource('s3')
+        filename = f"{name}_sentiment.csv"
+        res = s3_resource.Object(bucket, filename).\
+            put(Body=csv_buffer.getvalue())
+        LOG.info(f"result of write to bucket: {bucket} with:\n {res}")
+    except ClientError as e:
+        LOG.info(f"Unexpected error {e}")
 
 
 
@@ -169,4 +174,5 @@ def lambda_handler(event, context):
     LOG.info(f"Sentiment from FANG companies: {df.to_dict()}")
 
     # Write result to S3
+    LOG.info(f"before going into writing_to_s3 function")
     write_s3(df=df, bucket=BUCKET, name=names)
