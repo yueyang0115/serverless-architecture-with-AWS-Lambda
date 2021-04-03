@@ -36,8 +36,8 @@ sam deploy --guided
 ```
 #### Add permission & trigger
 Open AWS Lambda console, there'll be a new app "checkDB" and a new lambda function "checkDB-HelloWorldFunction-xxxx".  
-Click on the function, then click on "Configuration", then click on "permission", and finally click on the existing role. You will be lead to the IAM Management console.  
-On the new page, click on "Attach Policies". On the next page, find "AdministratorAccess" policy and choose to attach it.  
+Click on the function, then click on "Configuration", then click on "permission", and click on the existing role. You will be lead to the IAM console.  
+On the new page, click on "Attach Policies". On the next page, find "AdministratorAccess" policy and attach it.  
 Go back to previous function page in AWS lambda console, click on "Triggers". Delete the "API Gateway" trigger.  
 Add a new EventBridge(CloudWatch Events) trigger. For the settings, create a new rule, and name it "OneMinuteTimer"(or whatever). For "schedule expression", type "rate(1 minute)".  
 
