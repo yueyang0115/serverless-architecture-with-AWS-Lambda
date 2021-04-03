@@ -95,7 +95,7 @@ def names_to_wikipedia(names):
 
     wikipedia_snippit = []
     for name in names:
-        wikipedia_snippit.append(wikipedia.summary(name, sentences=1))
+        wikipedia_snippit.append(wikipedia.summary(name, sentences=1, auto_suggest=False, redirect=True))
     df = pd.DataFrame(
         {
             'names':names,
