@@ -170,7 +170,6 @@ def apply_all_analysis(df):
     apply_entities(df)
     return df
     
-    
 ### S3 ###
 
 def write_s3(df, bucket, name):
@@ -187,7 +186,6 @@ def write_s3(df, bucket, name):
         LOG.info(f"result of write to bucket: {bucket} with:\n {res}")
     except ClientError as e:
         LOG.info(f"Unexpected error {e}")
-
 
 
 def lambda_handler(event, context):
@@ -220,7 +218,7 @@ def lambda_handler(event, context):
     LOG.info(f"Creating dataframe with values: {names}")
     df = names_to_wikipedia(names)
 
-    # Perform Sentiment Analysis
+    # Perform Comprehend Analysis
     df = apply_all_analysis(df)
     LOG.info(f"Comprehend analysis from FANG companies: {df.to_dict()}")
 
