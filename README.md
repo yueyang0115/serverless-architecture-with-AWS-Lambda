@@ -1,7 +1,13 @@
 # serverless-architecture-with-AWS-Lambda
-This is a serverless architecture with AWS lambda. The walkflow is shown below.  
+This project build a serverless architecture with AWS lambda. It reads company data from DynamoDB table every minute, generates wikipedia snippts for each company, detects sentiment, key phrases and entities on the wikipedia snippts, and writes result to S3.  
+The first lambda function reads from DynamoDB table, and puts messages into SQS. The second lambda function reads from SQS queue, generates wikipedia snippts, performs analysis using AWS comprehend and writes result to S3.  
+The workflow is as below.  
 
 <img width="1263" alt="walkthrough" src="https://user-images.githubusercontent.com/44473421/113493108-992ac400-94aa-11eb-9a58-31853e463541.png">
+
+The generated result is as below.
+
+<img width="1265" alt="result" src="https://user-images.githubusercontent.com/44473421/113498263-621fd700-94d9-11eb-96cb-3bac58fdb3ac.png">
 
 
 ## Reference
