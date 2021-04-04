@@ -50,7 +50,7 @@ In AWS Lambda console, on the specific function page, you can click on the monit
 You can disable the trigger and purge the SQS queue anytime you want.  
 
 ### Create consumer-side lambda function
-The second lambda function reads messages from SQS queue, grabs company name from the message, makes Pandas dataframe with wikipedia snippts on the name, performs sentiment analysis based on the wikipedia result, and writes results to S3. It is triggered by SQS.  
+The second lambda function reads messages from SQS queue and grabs company name from them. Then it makes wikipedia snippts of the name. Then it performs sentiment detction, key_phrases detection and entities detection on the wikipedia snippts using AWS comprehend API. Finally, it writes the analysis result to S3. This function is triggered by SQS.  
 
 #### Create SAM application
 Create second SAM application named "checkSQS" like the previous one.  
