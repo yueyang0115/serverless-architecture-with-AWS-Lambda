@@ -91,6 +91,8 @@ def delete_sqs_msg(queue_name, receipt_handle):
     LOG.info(delete_log_msg_resp)
     return response
 
+### Wikipedia ###
+
 def names_to_wikipedia(names):
 
     wikipedia_snippit = []
@@ -104,10 +106,12 @@ def names_to_wikipedia(names):
     )
     return df
 
+### Comprehend ###
+
 def create_sentiment(row):
     """Uses AWS Comprehend to Create Sentiments on a DataFrame"""
 
-    LOG.info(f"Processing {row}")
+    LOG.info(f"Sentiment Detection Processing {row}")
     comprehend = boto3.client(service_name='comprehend')
     payload = comprehend.detect_sentiment(Text=row, LanguageCode='en')
     LOG.debug(f"Found Sentiment: {payload}")
@@ -120,6 +124,53 @@ def apply_sentiment(df, column="wikipedia_snippit"):
     df['Sentiment'] = df[column].apply(create_sentiment)
     return df
 
+def create_keyphrases(row):
+    """Uses AWS Comprehend to Detect Key Phrases on a DataFrame"""
+    
+    LOG.info(f"Key Phrases Detection Processing {row}")
+    comprehend = boto3.client(service_name='comprehend')
+    payload = comprehend.detect_key_phrases(Text=row, LanguageCode='en')
+    LOG.debug(f"Found Key Phrases: {payload}")
+    keyphrases = payload['KeyPhrases']
+    texts = []
+    for obj in keyphrases:
+        texts.append(obj['Text'])
+    LOG.debug(f"Found Text in Key Phrases: {texts}")
+    return texts
+    
+def apply_keyphrases(df, column="wikipedia_snippit"):
+    """Uses Pandas Apply to Create Key Phrases Analysis"""
+    
+    df['KeyPhrases'] = df[column].apply(create_keyphrases)
+    return df
+    
+def create_entities(row):
+    """Uses AWS Comprehend to Detect Entities on a DataFrame"""
+
+    LOG.info(f"Entities Detection Processing {row}")
+    comprehend = boto3.client(service_name='comprehend')
+    payload = comprehend.detect_entities(Text=row, LanguageCode='en')
+    LOG.debug(f"Found Entities: {payload}")
+    entities = payload['Entities']
+    texts = []
+    for obj in entities:
+        texts.append(obj['Text'])
+    LOG.debug(f"Found Text in Entities: {texts}")
+    return texts
+
+def apply_entities(df, column="wikipedia_snippit"):
+    """Uses Pandas Apply to Create Entities Analysis"""
+     
+    df['Entities'] = df[column].apply(create_entities)
+    return df
+
+def apply_all_analysis(df):
+    apply_sentiment(df)
+    apply_keyphrases(df)
+    apply_entities(df)
+    return df
+    
+    
 ### S3 ###
 
 def write_s3(df, bucket, name):
@@ -170,9 +221,8 @@ def lambda_handler(event, context):
     df = names_to_wikipedia(names)
 
     # Perform Sentiment Analysis
-    df = apply_sentiment(df)
-    LOG.info(f"Sentiment from FANG companies: {df.to_dict()}")
+    df = apply_all_analysis(df)
+    LOG.info(f"Comprehend analysis from FANG companies: {df.to_dict()}")
 
     # Write result to S3
-    LOG.info(f"before going into writing_to_s3 function")
     write_s3(df=df, bucket=BUCKET, name=names)
