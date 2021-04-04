@@ -28,6 +28,8 @@ For settings of the SAM app, select python 3.7/3.8 as the run time, select "AWS 
 In Cloud9 IDE, click on "Environment" and check the file hierarchy. Find your lambda function's folder and open the sub-folder "hello-world".  
 Replace "app.py" with the file [checkDB/hello_world/app.py](https://github.com/yueyang0115/serverless-architecture-with-AWS-Lambda/blob/main/checkDB/hello_world/app.py) from this repo.  
 Modify app.py, change the name of DynamoDB table and the name of SQS queue.  
+Replace "requirements.txt" with the file [checkDB/hello_world/requirements.txt](https://github.com/yueyang0115/serverless-architecture-with-AWS-Lambda/blob/main/checkDB/hello_world/requirements.txt) from this repo.  
+
 #### Build and deploy
 Then you can build and deploy this application. More details can be found in the README file in this lambda fuction's folder.  
 ```
@@ -41,7 +43,36 @@ On the new page, click on "Attach Policies". On the next page, find "Administrat
 Go back to previous function page in AWS lambda console, click on "Triggers". Delete the "API Gateway" trigger.  
 Add a new EventBridge(CloudWatch Events) trigger. For the settings, create a new rule, and name it "OneMinuteTimer"(or whatever). For "schedule expression", type "rate(1 minute)".  
 
-#### Test 
+#### Test
 Now you can enable the trigger and see the messages in SQS queue.  
 In AWS SQS console, click on the "checkDB" queue, then click on "Send and receive messages" and then "poll for messages".  
-In AWS Lambda console, you can click on the monitor and find more details about the activity. You can also "View Logs in CloudWatch".  
+In AWS Lambda console, on the specific function page, you can click on the monitor and find more details about the activity. You can also "View Logs in CloudWatch".  
+You can disable the trigger and purge the SQS queue anytime you want.  
+
+### Create consumer-side lambda function
+The second lambda function reads messages from SQS queue, grabs company name from the message, makes Pandas dataframe with wikipedia snippts on the name, performs sentiment analysis based on the wikipedia result, and writes results to S3. It is triggered by SQS.  
+
+#### Create SAM application
+Create second SAM application named "checkSQS" like the previous one.  
+Replace "app.py" with the file [checkSQS/hello_world/app.py](https://github.com/yueyang0115/serverless-architecture-with-AWS-Lambda/blob/main/checkSQS/hello_world/app.py) from this repo.  
+Modify app.py, change REGION and bucket name.  
+Replace "requirements.txt" with the file [checkSQS/hello_world/requirements.txt](https://github.com/yueyang0115/serverless-architecture-with-AWS-Lambda/blob/main/checkSQS/hello_world/requirements.txt) from this repo.  
+
+#### Build and deploy
+```
+sam build --use-container
+sam deploy --guided
+```
+
+#### Add permission & trigger
+Add permission and delete the "API Gateway" trigger like before.  
+Add a new SQS trigger. For the settings, select your queue, and set batch_size as 1. 
+
+#### Modify Timeout of Lambda function
+To succsssfully write result to S3, you should change the timeout of the second lambda function.   
+Open the second lambda function's page, click on "Configuration", then click on "General configuration". Set the timeout to 1 minute.
+
+#### Test 
+Now you can enable both triggers of the two functions and check the results in S3 bucket. You sould find some csv files.  
+You can also monitor the two lambda functions like before.  
+If you want to clear the activity, you can disable the triggers and purge the SQS queue.  
